@@ -49,8 +49,9 @@ python manage.py runserver
 
 ## Usage
 
-### Shorten a URL
+### Shorten a URL (with Rate Limiting)
 - **Endpoint:** `POST /api/v1/shorten/`
+- **Rate Limit:** 1 request per minute per IP
 - **Payload:**
 ```json
 {
@@ -60,7 +61,42 @@ python manage.py runserver
 - **Response:**
 ```json
 {
-  "short_url": "http://short.ner/abc123"
+    "status_code": 200,
+    "message": "Okay.",
+    "data": {
+        "short_url": "http://short.ner/s1qbl8"
+    },
+    "success": true
+}
+```
+
+### List All Shortened URLs (with Rate Limiting)
+- **Endpoint:** `GET /api/v1/shortened-urls/`
+- **Rate Limit:** 1 request per minute per IP
+- **Response:**
+```json
+{
+    "status_code": 200,
+    "message": "Okay.",
+    "data": [
+        {
+            "id": 1,
+            "short_url": "http://short.ner/s1qbl8",
+            "created_at": "2025-02-09T19:10:16.012311Z",
+            "updated_at": "2025-02-09T19:10:16.012365Z",
+            "long_url": "http://127.0.0.1:8000/api/v2/shorten/",
+            "short_code": "s1qbl8"
+        },
+        {
+            "id": 2,
+            "short_url": "http://short.ner/egjdq6",
+            "created_at": "2025-02-09T19:19:05.706349Z",
+            "updated_at": "2025-02-09T19:19:05.706432Z",
+            "long_url": "http://127.0.0.1:8000/api/v3/shorten/",
+            "short_code": "egjdq6"
+        }
+    ],
+    "success": true
 }
 ```
 
