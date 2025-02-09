@@ -62,7 +62,7 @@
             if (data.success) {
                 document.getElementById('result').innerHTML = `Shortened URL: <a href="${data.data.short_url}" target="_blank">${data.data.short_url}</a>`;
             } else {
-                document.getElementById('result').innerText = 'Error: ' + (data.long_url || 'Failed to shorten URL');
+                document.getElementById('result').innerText = 'Error: ' + (data.long_url || data.error || 'Failed to shorten URL');
             }
         }
 
@@ -71,15 +71,20 @@
             const data = await response.json();
             const tableBody = document.getElementById('urls-list');
             tableBody.innerHTML = '';
-            data.data.forEach(url => {
-                const row = `<tr>
-                    <td>${url.long_url}</td>
-                    <td>${url.short_code}</td>
-                    <td><a href="${url.short_url}" target="_blank">${url.short_url}</a></td>
-                    <td>${url.created_at}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
-            });
+            if (data.success){
+                data.data.forEach(url => {
+                    const row = `<tr>
+                        <td>${url.long_url}</td>
+                        <td>${url.short_code}</td>
+                        <td><a href="${url.short_url}" target="_blank">${url.short_url}</a></td>
+                        <td>${url.created_at}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            }
+            else {
+                tableBody.innerHTML = data.error;
+            }
         }
 
         function showTab(tabId) {

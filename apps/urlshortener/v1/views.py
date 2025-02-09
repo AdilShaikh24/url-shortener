@@ -1,4 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+from django_ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
@@ -12,7 +15,11 @@ from config.settings.base import BASE_SHORTENED_URL
 
 # View for shortening URLs
 class ShortenedUrlView(APIView):
+    @method_decorator(ratelimit(key='ip', rate='1/m', method='POST', block=False))
     def post(self, request):
+        was_limited = getattr(request, 'limited', False)
+        if was_limited:
+            return JsonResponse({'error': 'try again in 1 minute'}, status=429)
         request_body = CreateShortenedURLRequestBody(data=get_request_data(request))
         request_body.is_valid(raise_exception=True)
         data = request_body.data
@@ -42,7 +49,11 @@ class ShortenedUrlListView(ListAPIView):
         queryset = ShortenedURL.objects.filter()
         return queryset
 
+    @method_decorator(ratelimit(key='ip', rate='1/m', method='GET', block=False))
     def get(self, request, *args, **kwargs):
+        was_limited = getattr(request, 'limited', False)
+        if was_limited:
+            return JsonResponse({'error': 'try again in 1 minute'}, status=429)
         response = super().get(request, *args, **kwargs)
         data = response.data
 

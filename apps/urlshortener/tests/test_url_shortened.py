@@ -3,6 +3,11 @@ from apps.urlshortener.models import ShortenedURL
 
 
 class URLShortenerTests(TestCase):
+    def test_shorten_url_rate_limit(self):
+        response = self.client.post('/api/v1/shorten/', {'long_url': 'https://example.com'})
+        self.assertEqual(response.status_code, 429)
+        self.assertIn('error', response.json())
+
     def test_shorten_url(self):
         response = self.client.post('/api/v1/shorten/', {'long_url': 'https://example.com'})
         self.assertEqual(response.status_code, 200)
