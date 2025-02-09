@@ -19,19 +19,16 @@ class ShortenedUrlView(APIView):
     def post(self, request):
         was_limited = getattr(request, 'limited', False)
         if was_limited:
-            return JsonResponse({'error': 'try again in 1 minute'}, status=429)
+            return JsonResponse({'error': 'Try again in 1 minute'}, status=429)
         request_body = CreateShortenedURLRequestBody(data=get_request_data(request))
         request_body.is_valid(raise_exception=True)
         data = request_body.data
         long_url = data["long_url"]
-        shortened_url = ShortenedURL.objects.filter(long_url=long_url)
-        if shortened_url:
-            ret_data = {"short_url": f"{BASE_SHORTENED_URL}{shortened_url[0].short_code}"}
-        else:
-            shortened_url = ShortenedURL(long_url=data["long_url"])
-            shortened_url.short_code = shortened_url.generate_unique_short_code()
-            shortened_url.save()
-            ret_data = {"short_url": f"{BASE_SHORTENED_URL}{shortened_url.short_code}"}
+        shortened_url, _ = ShortenedURL.objects.get_or_create(
+            long_url=long_url,
+            defaults={"short_code": ShortenedURL.generate_unique_short_code()}
+        )
+        ret_data = {"short_url": f"{BASE_SHORTENED_URL}{shortened_url.short_code}"}
 
         # Format response
         response = format_response(
@@ -53,7 +50,7 @@ class ShortenedUrlListView(ListAPIView):
     def get(self, request, *args, **kwargs):
         was_limited = getattr(request, 'limited', False)
         if was_limited:
-            return JsonResponse({'error': 'try again in 1 minute'}, status=429)
+            return JsonResponse({'error': 'Try again in 1 minute'}, status=429)
         response = super().get(request, *args, **kwargs)
         data = response.data
 

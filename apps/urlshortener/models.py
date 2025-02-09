@@ -18,4 +18,7 @@ class ShortenedURL(AuditMixin):
     def generate_unique_short_code():
         length = 6
         chars = string.ascii_lowercase + string.digits
-        return ''.join(random.choices(chars, k=length))
+        while True:
+            short_code = ''.join(random.choices(chars, k=length))
+            if not ShortenedURL.objects.filter(short_code=short_code).exists():
+                return short_code
